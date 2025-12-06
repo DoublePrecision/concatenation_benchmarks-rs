@@ -42,7 +42,7 @@ Benchmarks were run using [Criterion](https://crates.io/crates/criterion) with [
 
 | Rank | Benchmark | Mean | Std Dev | vs Fastest |
 |------|-----------|------|---------|------------|
-| 1 | `from_bytes` | 0.44 ns | ±0.00 ns | 1.00x (baseline) |
+| 1 | `from_bytes` (UNSAFE) | 0.44 ns | ±0.00 ns | 1.00x (baseline) |
 | 2 | `string_concat_macro` | 4.77 ns | ±0.01 ns | 10.78x slower |
 | 3 | `concat_strs_macro` | 5.00 ns | ±0.04 ns | 11.30x slower |
 | 4 | `mut_string_with_capacity_push_str_char` | 5.17 ns | ±0.03 ns | 11.70x slower |
@@ -88,6 +88,6 @@ Benchmarks were run using [Criterion](https://crates.io/crates/criterion) with [
 
 ## Summary
 
-**Fastest string concat:** `from_bytes` (0.44 ns)
+**Fastest string concat:** `from_bytes` (UNSAFE) (0.44 ns)
 
 **Fastest RGB format:** `rgb_itoa_reuse_buffer` (4.86 ns)
