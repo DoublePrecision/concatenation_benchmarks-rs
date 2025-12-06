@@ -93,9 +93,30 @@ async function main() {
   // Sort by mean time (fastest first)
   results.sort((a, b) => a.mean - b.mean);
 
-  // Separate string concat benchmarks from RGB benchmarks
-  const stringResults = results.filter((r) => !r.name.startsWith("rgb_"));
-  const rgbResults = results.filter((r) => r.name.startsWith("rgb_"));
+  // Separate benchmarks into categories
+  const isCompactString = (name: string) =>
+    name.includes("compact_string") || name.includes("to_compact_string");
+  const isRgb = (name: string) => name.startsWith("rgb_");
+
+  // String concatenation (non-RGB, non-CompactString)
+  const stringResults = results.filter(
+    (r) => !isRgb(r.name) && !isCompactString(r.name),
+  );
+
+  // RGB formatting (non-CompactString)
+  const rgbResults = results.filter(
+    (r) => isRgb(r.name) && !isCompactString(r.name),
+  );
+
+  // CompactString benchmarks (non-RGB)
+  const compactStringResults = results.filter(
+    (r) => isCompactString(r.name) && !isRgb(r.name),
+  );
+
+  // CompactString RGB benchmarks
+  const compactStringRgbResults = results.filter(
+    (r) => isCompactString(r.name) && isRgb(r.name),
+  );
 
   const generateTable = (
     benchmarks: BenchmarkResult[],
@@ -136,15 +157,39 @@ async function main() {
     output += "\n";
   }
 
+  if (compactStringResults.length > 0) {
+    output += generateTable(
+      compactStringResults,
+      "CompactString Concatenation (DateTime)",
+    );
+    output += "\n";
+  }
+
+  if (compactStringRgbResults.length > 0) {
+    output += generateTable(
+      compactStringRgbResults,
+      "CompactString RGB Formatting (with number conversion)",
+    );
+    output += "\n";
+  }
+
   // Summary section
   output += "## Summary\n\n";
 
   if (stringResults.length > 0) {
-    output += `**Fastest string concat:** \`${stringResults[0].name}\` (${formatTime(stringResults[0].mean)})\n\n`;
+    output += `**Fastest String concat:** \`${stringResults[0].name}\` (${formatTime(stringResults[0].mean)})\n\n`;
   }
 
   if (rgbResults.length > 0) {
     output += `**Fastest RGB format:** \`${rgbResults[0].name}\` (${formatTime(rgbResults[0].mean)})\n\n`;
+  }
+
+  if (compactStringResults.length > 0) {
+    output += `**Fastest CompactString concat:** \`${compactStringResults[0].name}\` (${formatTime(compactStringResults[0].mean)})\n\n`;
+  }
+
+  if (compactStringRgbResults.length > 0) {
+    output += `**Fastest CompactString RGB format:** \`${compactStringRgbResults[0].name}\` (${formatTime(compactStringRgbResults[0].mean)})\n\n`;
   }
 
   console.log(output);
