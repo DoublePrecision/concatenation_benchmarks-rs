@@ -45,7 +45,7 @@ LLVM version: 21.1.5
 
 | Rank | Benchmark | Mean | Std Dev | vs Fastest |
 |------|-----------|------|---------|------------|
-| 1 | `from_bytes` | 0.34 ns | ±0.11 ns | 1.00x (baseline) |
+| 1 | `from_bytes (UNSAFE)` | 0.34 ns | ±0.11 ns | 1.00x (baseline) |
 | 2 | `mut_string_with_capacity_push_str` | 4.73 ns | ±0.02 ns | 13.91x slower |
 | 3 | `concat_strs_macro` | 4.81 ns | ±0.02 ns | 14.14x slower |
 | 4 | `mut_string_with_capacity_push_str_char` | 4.93 ns | ±0.22 ns | 14.49x slower |
@@ -112,7 +112,7 @@ LLVM version: 21.1.5
 
 ## Summary
 
-- **Fastest String concat:** `from_bytes` (0.34 ns)
+- **Fastest String concat:** `from_bytes (UNSAFE)` (0.34 ns)
 - **Fastest RGB format:** `rgb_itoa_with_capacity` (5.28 ns)
 - **Fastest CompactString concat:** `collect_from_vec_to_compact_string` (13.24 ns)
 - **Fastest CompactString RGB format:** `rgb_compact_string_itoa` (50.19 ns)
@@ -141,7 +141,7 @@ LLVM version: 21.1.5
 
 | Rank | Benchmark | Mean | Std Dev | vs Fastest |
 |------|-----------|------|---------|------------|
-| 1 | `from_bytes` | 0.32 ns | ±0.00 ns | 1.00x (baseline) |
+| 1 | `from_bytes (UNSAFE)` | 0.32 ns | ±0.00 ns | 1.00x (baseline) |
 | 2 | `mut_string_with_capacity_push_str` | 5.75 ns | ±0.03 ns | 17.95x slower |
 | 3 | `mut_string_with_capacity_push_str_char` | 5.75 ns | ±0.04 ns | 17.96x slower |
 | 4 | `string_concat_macro` | 5.75 ns | ±0.04 ns | 17.96x slower |
@@ -208,7 +208,7 @@ LLVM version: 21.1.5
 
 ## Summary
 
-- **Fastest String concat:** `from_bytes` (0.32 ns)
+- **Fastest String concat:** `from_bytes (UNSAFE)` (0.32 ns)
 - **Fastest RGB format:** `rgb_itoa_reuse_buffer` (6.43 ns)
 - **Fastest CompactString concat:** `collect_from_array_to_compact_string` (10.51 ns)
 - **Fastest CompactString RGB format:** `rgb_compact_string_itoa` (49.14 ns)
