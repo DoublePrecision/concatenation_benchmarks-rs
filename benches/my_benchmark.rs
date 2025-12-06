@@ -1,3 +1,4 @@
+use compact_str::{CompactString, ToCompactString};
 use concat_string::concat_string;
 use concat_strs::concat_strs;
 use criterion::{Criterion, criterion_group, criterion_main};
@@ -462,7 +463,140 @@ fn rgb_write_macro(c: &mut Criterion) {
     });
 }
 
-#[cfg(unix)]
+fn compact_string_new_push_str(c: &mut Criterion) {
+    c.bench_function("compact_string_new_push_str", |b| {
+        b.iter(|| {
+            let mut datetime = CompactString::new("");
+            datetime.push_str(DATE);
+            datetime.push_str(T);
+            datetime.push_str(TIME);
+            black_box(datetime);
+        });
+    });
+}
+
+fn compact_string_with_capacity_push_str(c: &mut Criterion) {
+    c.bench_function("compact_string_with_capacity_push_str", |b| {
+        b.iter(|| {
+            let mut datetime = CompactString::with_capacity(20);
+            datetime.push_str(DATE);
+            datetime.push_str(T);
+            datetime.push_str(TIME);
+            black_box(datetime);
+        });
+    });
+}
+
+fn compact_string_with_capacity_push_str_char(c: &mut Criterion) {
+    c.bench_function("compact_string_with_capacity_push_str_char", |b| {
+        b.iter(|| {
+            let mut datetime = CompactString::with_capacity(20);
+            datetime.push_str(DATE);
+            datetime.push('T');
+            datetime.push_str(TIME);
+            black_box(datetime);
+        });
+    });
+}
+
+fn compact_string_from_plus_op(c: &mut Criterion) {
+    c.bench_function("compact_string_from_plus_op", |b| {
+        b.iter(|| {
+            let datetime: &str = &(CompactString::from(DATE) + T + TIME);
+            black_box(datetime);
+        });
+    });
+}
+
+fn compact_string_to_compact_string_plus_op(c: &mut Criterion) {
+    c.bench_function("compact_string_to_compact_string_plus_op", |b| {
+        b.iter(|| {
+            let datetime: &str = &(DATE.to_compact_string() + T + TIME);
+            black_box(datetime);
+        });
+    });
+}
+
+fn collect_from_array_to_compact_string(c: &mut Criterion) {
+    let list = [DATE, T, TIME];
+    c.bench_function("collect_from_array_to_compact_string", |b| {
+        b.iter(|| {
+            let datetime: CompactString = list.iter().map(|x| *x).collect();
+            black_box(datetime);
+        });
+    });
+}
+
+fn collect_from_vec_to_compact_string(c: &mut Criterion) {
+    let list = vec![DATE, T, TIME];
+    c.bench_function("collect_from_vec_to_compact_string", |b| {
+        b.iter(|| {
+            let datetime: CompactString = list.iter().map(|x| *x).collect();
+            black_box(datetime);
+        });
+    });
+}
+
+fn rgb_compact_string_push_str(c: &mut Criterion) {
+    c.bench_function("rgb_compact_string_push_str", |b| {
+        b.iter(|| {
+            let mut style = CompactString::new("");
+            style.push_str("background-color: rgb(");
+            style.push_str(&RED.to_string());
+            style.push_str(", ");
+            style.push_str(&GREEN.to_string());
+            style.push_str(", ");
+            style.push_str(&BLUE.to_string());
+            style.push(')');
+            black_box(style);
+        });
+    });
+}
+
+fn rgb_compact_string_with_capacity_push_str(c: &mut Criterion) {
+    c.bench_function("rgb_compact_string_with_capacity_push_str", |b| {
+        b.iter(|| {
+            let mut style = CompactString::with_capacity(36);
+            style.push_str("background-color: rgb(");
+            style.push_str(&RED.to_string());
+            style.push_str(", ");
+            style.push_str(&GREEN.to_string());
+            style.push_str(", ");
+            style.push_str(&BLUE.to_string());
+            style.push(')');
+            black_box(style);
+        });
+    });
+}
+
+fn rgb_compact_string_itoa(c: &mut Criterion) {
+    c.bench_function("rgb_compact_string_itoa", |b| {
+        b.iter(|| {
+            let mut buf = itoa::Buffer::new();
+            let mut style = CompactString::with_capacity(36);
+            style.push_str("background-color: rgb(");
+            style.push_str(buf.format(RED));
+            style.push_str(", ");
+            style.push_str(buf.format(GREEN));
+            style.push_str(", ");
+            style.push_str(buf.format(BLUE));
+            style.push(')');
+            black_box(style);
+        });
+    });
+}
+
+fn rgb_compact_string_write_macro(c: &mut Criterion) {
+    use std::fmt::Write;
+    c.bench_function("rgb_compact_string_write_macro", |b| {
+        b.iter(|| {
+            let mut style = CompactString::with_capacity(36);
+            write!(style, "background-color: rgb({}, {}, {})", RED, GREEN, BLUE).unwrap();
+            black_box(style);
+        });
+    });
+}
+
 criterion_group!(
     benches,
     array_concat,
@@ -504,49 +638,19 @@ criterion_group!(
     rgb_precomputed_strings,
     rgb_precomputed_concat_string,
     rgb_write_macro,
-);
-
-#[cfg(not(unix))]
-criterion_group!(
-    benches,
-    array_concat,
-    array_join,
-    array_join_long,
-    collect_from_array_to_string,
-    collect_from_vec_to_string,
-    format_macro,
-    format_macro_implicit_args,
-    mut_string_push_str,
-    mut_string_push_string,
-    mut_string_with_capacity_push_str,
-    mut_string_with_capacity_push_str_char,
-    mut_string_with_too_little_capacity_push_str,
-    mut_string_with_too_much_capacity_push_str,
-    string_from_all,
-    string_from_plus_op,
-    to_owned_plus_op,
-    to_string_plus_op,
-    concat_in_place_macro,
-    string_concat_macro,
-    concat_strs_macro,
-    concat_string_macro,
-    joinery_bench,
-    // RGB benchmarks
-    rgb_format_macro,
-    rgb_format_macro_implicit_args,
-    rgb_mut_string_push_str,
-    rgb_mut_string_with_capacity_push_str,
-    rgb_string_from_plus_op,
-    rgb_array_join,
-    rgb_concat_string_macro,
-    rgb_concat_strs_macro,
-    rgb_concat_in_place_macro,
-    rgb_string_concat_macro,
-    rgb_itoa_with_capacity,
-    rgb_itoa_reuse_buffer,
-    rgb_precomputed_strings,
-    rgb_precomputed_concat_string,
-    rgb_write_macro,
+    // CompactString benchmarks
+    compact_string_new_push_str,
+    compact_string_with_capacity_push_str,
+    compact_string_with_capacity_push_str_char,
+    compact_string_from_plus_op,
+    compact_string_to_compact_string_plus_op,
+    collect_from_array_to_compact_string,
+    collect_from_vec_to_compact_string,
+    // CompactString RGB benchmarks
+    rgb_compact_string_push_str,
+    rgb_compact_string_with_capacity_push_str,
+    rgb_compact_string_itoa,
+    rgb_compact_string_write_macro,
 );
 
 criterion_main!(benches);
