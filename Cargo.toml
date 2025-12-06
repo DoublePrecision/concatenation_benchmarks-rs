@@ -2,10 +2,22 @@
 name = "concatenation_benchmarks"
 version = "0.1.0"
 authors = ["Hendrik Sollich <hendrik@hoodie.de>"]
+edition = "2024"
 
-[dependencies]
+[dev-dependencies]
+criterion = "0.5"
+regex = "1.12.2"
 concat-string = "1.0.1"
 concat_strs = "1.0.2"
 string_concat = "0.0.1"
 concat-in-place = "1.0.0"
 joinery = "2.1.0"
+mimalloc = { version = "0.1.48", features = ["v3"]}
+itoa = "1.0"
+
+[[bench]]
+name = "my_benchmark"
+harness = false
+
+[dependencies]
+itoa = "1.0"

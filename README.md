@@ -1,292 +1,93 @@
-# Comparing ways to concatenate strings in Rust 1.61 nightly (1.58 stable)
+# Rust String Concatenation Benchmarks
+
+> **Note:** This project was originally forked from [Hendrik Sollich's concatenation_benchmarks-rs](https://github.com/hoodie/concatenation_benchmarks-rs). It has been updated to use [Criterion](https://github.com/bheisler/criterion.rs) for more updated benchmarking for 2025 and extended with additional benchmarks for number-to-string formatting.
+
 ## Intro
 
 There are many ways to turn a `&str` into a `String` in Rust and therefore many ways to concatenate two `&str`s.
 
-Here I benchmark several different ways to concatenate the strings `"2014-11-28"`, `"T"` and `"12:00:09Z"` into `"2014-11-28T12:00:09Z"`.
+Here we benchmark several different ways to concatenate the strings `"2014-11-28"`, `"T"` and `"12:00:09Z"` into `"2014-11-28T12:00:09Z"`.
 
-Thanks to all the comments on and discussion on [reddit](https://www.reddit.com/r/rust/comments/48fmta/seven_ways_to_concatenate_strings_in_rust_the/) where I posted these originally only 7 benchmarks. Some go into the details of what is going on in the background of these operations.
-
+Additionally, We've added benchmarks for a more realistic use case: formatting RGB values into a CSS background-color string like `"background-color: rgb(255, 128, 64)"`. This tests how different approaches handle number-to-string conversion.
 
 ## How to run?
 
-* benchmarks: `cargo +nightly bench`
-* tests: `cargo +nightly test --benches`
+* benchmarks: `cargo bench`
+* generate results table: `bun run scripts/results-to-markdown.ts`
 
+## Hardware
 
-## Results (on my machine)
+- CPU: AMD Ryzen 7 5800X3D @ 4.5GHz
+- RAM: 32GB DDR4 3200MHz
+- Kernel: 6.17.9-arch1-1
 
-```bash
-$ cargo +nightly bench
-
-running 46 tests
-test array_concat_test ... ignored
-test array_join_long_test ... ignored
-test array_join_test ... ignored
-test collect_from_array_to_string_test ... ignored
-test collect_from_vec_to_string_test ... ignored
-test concat_in_place_macro_test ... ignored
-test concat_string_macro_test ... ignored
-test concat_strs_macro_test ... ignored
-test format_macro_implicit_args_test ... ignored
-test format_macro_test ... ignored
-test from_bytes_test ... ignored
-test joinery_test ... ignored
-test mut_string_push_str_test ... ignored
-test mut_string_push_string_test ... ignored
-test mut_string_with_capacity_push_str_char_test ... ignored
-test mut_string_with_capacity_push_str_test ... ignored
-test mut_string_with_too_little_capacity_push_str_test ... ignored
-test mut_string_with_too_much_capacity_push_str_test ... ignored
-test string_concat_macro_test ... ignored
-test string_from_all_test ... ignored
-test string_from_plus_op_test ... ignored
-test to_owned_plus_op_test ... ignored
-test to_string_plus_op_test ... ignored
-test array_concat                                 ... bench:          24 ns/iter (+/- 0)
-test array_join                                   ... bench:          22 ns/iter (+/- 0)
-test array_join_long                              ... bench:          24 ns/iter (+/- 0)
-test collect_from_array_to_string                 ... bench:          30 ns/iter (+/- 0)
-test collect_from_vec_to_string                   ... bench:          34 ns/iter (+/- 0)
-test concat_in_place_macro                        ... bench:          14 ns/iter (+/- 0)
-test concat_string_macro                          ... bench:          10 ns/iter (+/- 0)
-test concat_strs_macro                            ... bench:          10 ns/iter (+/- 0)
-test format_macro                                 ... bench:          52 ns/iter (+/- 0)
-test format_macro_implicit_args                   ... bench:          53 ns/iter (+/- 0)
-test from_bytes                                   ... bench:           0 ns/iter (+/- 0)
-test joinery                                      ... bench:          46 ns/iter (+/- 0)
-test mut_string_push_str                          ... bench:          24 ns/iter (+/- 0)
-test mut_string_push_string                       ... bench:          68 ns/iter (+/- 1)
-test mut_string_with_capacity_push_str            ... bench:          10 ns/iter (+/- 1)
-test mut_string_with_capacity_push_str_char       ... bench:          10 ns/iter (+/- 0)
-test mut_string_with_too_little_capacity_push_str ... bench:          39 ns/iter (+/- 0)
-test mut_string_with_too_much_capacity_push_str   ... bench:          19 ns/iter (+/- 10)
-test string_concat_macro                          ... bench:          10 ns/iter (+/- 0)
-test string_from_all                              ... bench:          43 ns/iter (+/- 1)
-test string_from_plus_op                          ... bench:          27 ns/iter (+/- 0)
-test to_owned_plus_op                             ... bench:          29 ns/iter (+/- 0)
-test to_string_plus_op                            ... bench:          27 ns/iter (+/- 0)
-
-test result: ok. 0 passed; 0 failed; 23 ignored; 23 measured; 0 filtered out; finished in 33.39s
-```
-
-#### The same results rearranged fastest to slowest
+## Compiler
 
 ```
-0 ns/iter (+/- 0)         from_bytes
-10 ns/iter (+/- 0)        concat_string_macro
-10 ns/iter (+/- 0)        concat_strs_macro
-10 ns/iter (+/- 0)        mut_string_with_capacity_push_str_char
-10 ns/iter (+/- 0)        string_concat_macro
-10 ns/iter (+/- 1)        mut_string_with_capacity_push_str
-14 ns/iter (+/- 0)        concat_in_place_macro
-19 ns/iter (+/- 10)       mut_string_with_too_much_capacity_push_str
-22 ns/iter (+/- 0)        array_join
-24 ns/iter (+/- 0)        array_concat
-24 ns/iter (+/- 0)        array_join_long
-24 ns/iter (+/- 0)        mut_string_push_str
-27 ns/iter (+/- 0)        string_from_plus_op
-27 ns/iter (+/- 0)        to_string_plus_op
-29 ns/iter (+/- 0)        to_owned_plus_op
-30 ns/iter (+/- 0)        collect_from_array_to_string
-34 ns/iter (+/- 0)        collect_from_vec_to_string
-39 ns/iter (+/- 0)        mut_string_with_too_little_capacity_push_str
-43 ns/iter (+/- 1)        string_from_all
-46 ns/iter (+/- 0)        joinery
-52 ns/iter (+/- 0)        format_macro
-53 ns/iter (+/- 0)        format_macro_implicit_args
-68 ns/iter (+/- 1)        mut_string_push_string
-```
-
-## Examples explained
-
-
-### `array_concat()`
-```rust
-let datetime = &[DATE, T, TIME].concat();
+rustc 1.94.0-nightly (1aa9bab4e 2025-12-05)
+binary: rustc
+commit-hash: 1aa9bab4ecbce4859eaad53000f78158ebe2be2c
+commit-date: 2025-12-05
+host: x86_64-unknown-linux-gnu
+release: 1.94.0-nightly
+LLVM version: 21.1.5
 ```
 
 
-### `array_join()`
-```rust
-let datetime = &[DATE, TIME].join(T);
-```
+## Results
 
+Benchmarks were run using [Criterion](https://crates.io/crates/criterion) with [mimalloc](https://crates.io/crates/mimalloc) as the global allocator.
 
-### `array_join_long()`
-```rust
-let datetime = &[DATE, T, TIME].join("");
-```
+## String Concatenation (DateTime)
 
+| Rank | Benchmark | Mean | Std Dev | vs Fastest |
+|------|-----------|------|---------|------------|
+| 1 | `from_bytes` | 0.44 ns | ±0.00 ns | 1.00x (baseline) |
+| 2 | `string_concat_macro` | 4.77 ns | ±0.01 ns | 10.78x slower |
+| 3 | `concat_strs_macro` | 5.00 ns | ±0.04 ns | 11.30x slower |
+| 4 | `mut_string_with_capacity_push_str_char` | 5.17 ns | ±0.03 ns | 11.70x slower |
+| 5 | `mut_string_with_capacity_push_str` | 5.19 ns | ±0.04 ns | 11.72x slower |
+| 6 | `concat_string_macro` | 5.39 ns | ±0.04 ns | 12.19x slower |
+| 7 | `mut_string_with_too_much_capacity_push_str` | 9.85 ns | ±0.19 ns | 22.27x slower |
+| 8 | `concat_in_place_macro` | 10.16 ns | ±0.03 ns | 22.97x slower |
+| 9 | `to_string_plus_op` | 22.01 ns | ±0.17 ns | 49.75x slower |
+| 10 | `to_owned_plus_op` | 22.12 ns | ±0.09 ns | 50.00x slower |
+| 11 | `string_from_plus_op` | 22.18 ns | ±0.11 ns | 50.14x slower |
+| 12 | `mut_string_push_str` | 24.32 ns | ±0.06 ns | 54.97x slower |
+| 13 | `array_join` | 26.16 ns | ±0.12 ns | 59.13x slower |
+| 14 | `collect_from_array_to_string` | 26.22 ns | ±0.12 ns | 59.27x slower |
+| 15 | `string_from_all` | 26.77 ns | ±0.34 ns | 60.52x slower |
+| 16 | `array_join_long` | 26.82 ns | ±0.15 ns | 60.62x slower |
+| 17 | `array_concat` | 26.82 ns | ±0.20 ns | 60.63x slower |
+| 18 | `mut_string_with_too_little_capacity_push_str` | 28.63 ns | ±0.34 ns | 64.73x slower |
+| 19 | `collect_from_vec_to_string` | 29.41 ns | ±1.37 ns | 66.49x slower |
+| 20 | `joinery` | 35.91 ns | ±1.18 ns | 81.17x slower |
+| 21 | `format_macro` | 45.50 ns | ±0.06 ns | 102.85x slower |
+| 22 | `format_macro_implicit_args` | 45.66 ns | ±0.16 ns | 103.22x slower |
+| 23 | `mut_string_push_string` | 57.24 ns | ±0.29 ns | 129.40x slower |
 
-### `collect_from_array_to_string()`
-```rust
-let list = [DATE, T, TIME];
-let datetime: String = list.iter().map(|x| *x).collect();
-```
+## RGB Formatting (with number conversion)
 
-### `collect_from_vec_to_string()`
-```rust
-let list = vec![DATE, T, TIME];
-let datetime: String = list.iter().map(|x| *x).collect();
-```
+| Rank | Benchmark | Mean | Std Dev | vs Fastest |
+|------|-----------|------|---------|------------|
+| 1 | `rgb_itoa_reuse_buffer` | 4.86 ns | ±0.02 ns | 1.00x (baseline) |
+| 2 | `rgb_itoa_with_capacity` | 4.87 ns | ±0.05 ns | 1.00x slower |
+| 3 | `rgb_precomputed_concat_string` | 15.54 ns | ±0.15 ns | 3.19x slower |
+| 4 | `rgb_string_concat_macro` | 37.68 ns | ±0.34 ns | 7.75x slower |
+| 5 | `rgb_concat_in_place_macro` | 37.79 ns | ±0.20 ns | 7.77x slower |
+| 6 | `rgb_mut_string_with_capacity_push_str` | 38.35 ns | ±0.23 ns | 7.88x slower |
+| 7 | `rgb_concat_strs_macro` | 40.33 ns | ±0.40 ns | 8.29x slower |
+| 8 | `rgb_concat_string_macro` | 41.49 ns | ±0.19 ns | 8.53x slower |
+| 9 | `rgb_string_from_plus_op` | 47.75 ns | ±0.52 ns | 9.82x slower |
+| 10 | `rgb_mut_string_push_str` | 52.40 ns | ±0.27 ns | 10.77x slower |
+| 11 | `rgb_write_macro` | 53.06 ns | ±0.20 ns | 10.91x slower |
+| 12 | `rgb_precomputed_strings` | 54.92 ns | ±1.32 ns | 11.29x slower |
+| 13 | `rgb_array_join` | 60.65 ns | ±2.01 ns | 12.47x slower |
+| 14 | `rgb_format_macro_implicit_args` | 61.66 ns | ±0.26 ns | 12.68x slower |
+| 15 | `rgb_format_macro` | 62.08 ns | ±0.71 ns | 12.76x slower |
 
-### `format_macro()`
+## Summary
 
-```rust
-let datetime = &format!("{}{}{}", DATE, T, TIME);
-```
+**Fastest string concat:** `from_bytes` (0.44 ns)
 
-### `format_macro_implicit_args()`
-
-```rust
-let datetime = &format!("{DATE}{T}{TIME}");
-```
-
-### `from_bytes()` ⚠️ don't actually do this
-
-```rust
-use std::ffi::OsStr;
-use std::os::unix::ffi::OsStrExt;
-use std::slice;
-
-let bytes = unsafe { slice::from_raw_parts(DATE.as_ptr(), 20) };
-
-let datetime = OsStr::from_bytes(bytes);
-```
-
-### `mut_string_push_str()`
-
-```rust
-let mut datetime = String::new();
-datetime.push_str(DATE);
-datetime.push_str(T);
-datetime.push_str(TIME);
-```
-
-### `mut_string_push_string()`
-
-```rust
-let mut datetime = Vec::<String>::new();
-datetime.push(String::from(DATE));
-datetime.push(String::from(T));
-datetime.push(String::from(TIME));
-let datetime = datetime.join("");
-```
-
-### `mut_string_with_capacity_push_str()`
-
-```rust
-let mut datetime = String::with_capacity(20);
-datetime.push_str(DATE);
-datetime.push_str(T);
-datetime.push_str(TIME);
-```
-
-### `mut_string_with_capacity_push_str_char()`
-
-```rust
-let mut datetime = String::with_capacity(20);
-datetime.push_str(DATE);
-datetime.push('T');
-datetime.push_str(TIME);
-```
-
-### `mut_string_with_too_little_capacity_push_str()`
-
-```rust
-let mut datetime = String::with_capacity(2);
-datetime.push_str(DATE);
-datetime.push_str(T);
-datetime.push_str(TIME);
-```
-
-### `mut_string_with_too_much_capacity_push_str()`
-
-```rust
-let mut datetime = String::with_capacity(200);
-datetime.push_str(DATE);
-datetime.push_str(T);
-datetime.push_str(TIME);
-```
-
-### `string_from_all()`
-
-```rust
-let datetime = &(String::from(DATE) + &String::from(T) + &String::from(TIME));
-```
-
-### `string_from_plus_op()`
-
-```rust
-let datetime = &(String::from(DATE) + T + TIME);
-```
-
-### `to_owned_plus_op()`
-
-```rust
-let datetime = &(DATE.to_owned() + T + TIME);
-```
-
-### `to_string_plus_op()`
-
-```rust
-let datetime = &(DATE.to_string() + T + TIME);
-```
-
-## Additional macro benches
-
-### `concat_string_macro`
-
-* Rank: #1 @10ns
-* Crate: https://crates.io/crates/concat-string
-
-```rust
-#[macro_use(concat_string)]
-extern crate concat_string;
-let datetime = concat_string!(DATE, T, TIME);
-```
-
-### `concat_strs_macro`
-
-* Rank: #1 @10ns
-* Crate: https://crates.io/crates/concat_strs
-
-Unfortunately, this macro [breaks RustAnalyzer](https://github.com/rust-analyzer/rust-analyzer/issues/6835).
-
-```rust
-#[macro_use(concat_strs)]
-extern crate concat_strs;
-let datetime = &concat_strs!(DATE, T, TIME);
-```
-
-### `string_concat_macro`
-
-* Rank: #1 @10ns
-* Crate: https://crates.io/crates/string_concat
-
-```rust
-#[macro_use]
-extern crate string_concat;
-let datetime = &string_concat::string_concat!(DATE, T, TIME);
-```
-
-### `concat_in_place_macro`
-
-* Rank: #2 @14ns
-* Crate: https://crates.io/crates/concat-in-place
-
-```rust
-let datetime = concat_in_place::strcat!(&mut url, DATE T TIME);
-```
-
-### `joinery`
-
-* Rank: #12 @46ns
-* Crate: https://crates.io/crates/joinery
-
-```rust
-use joinery::prelude::*;
-let vec = vec![DATE, T, TIME];
-let datetime = &vec.iter().join_concat().to_string();
-```
+**Fastest RGB format:** `rgb_itoa_reuse_buffer` (4.86 ns)
