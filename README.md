@@ -15,6 +15,14 @@ Additionally, We've added benchmarks for a more realistic use case: formatting R
 * benchmarks: `cargo bench`
 * generate results table: `bun run scripts/results-to-markdown.ts`
 
+## Criterion
+
+Benchmarks were run using [Criterion](https://crates.io/crates/criterion) with [mimalloc](https://crates.io/crates/mimalloc) as the global allocator.
+
+# Results
+
+## Linux
+
 ## Hardware
 
 - CPU: AMD Ryzen 7 5800X3D @ 4.5GHz
@@ -33,61 +41,56 @@ release: 1.94.0-nightly
 LLVM version: 21.1.5
 ```
 
-
-## Results
-
-Benchmarks were run using [Criterion](https://crates.io/crates/criterion) with [mimalloc](https://crates.io/crates/mimalloc) as the global allocator.
-
 ## String Concatenation (DateTime)
 
 | Rank | Benchmark | Mean | Std Dev | vs Fastest |
 |------|-----------|------|---------|------------|
-| 1 | `from_bytes` (UNSAFE) | 0.44 ns | ±0.00 ns | 1.00x (baseline) |
-| 2 | `string_concat_macro` | 4.77 ns | ±0.01 ns | 10.78x slower |
-| 3 | `concat_strs_macro` | 5.00 ns | ±0.04 ns | 11.30x slower |
-| 4 | `mut_string_with_capacity_push_str_char` | 5.17 ns | ±0.03 ns | 11.70x slower |
-| 5 | `mut_string_with_capacity_push_str` | 5.19 ns | ±0.04 ns | 11.72x slower |
-| 6 | `concat_string_macro` | 5.39 ns | ±0.04 ns | 12.19x slower |
-| 7 | `mut_string_with_too_much_capacity_push_str` | 9.85 ns | ±0.19 ns | 22.27x slower |
-| 8 | `concat_in_place_macro` | 10.16 ns | ±0.03 ns | 22.97x slower |
-| 9 | `to_string_plus_op` | 22.01 ns | ±0.17 ns | 49.75x slower |
-| 10 | `to_owned_plus_op` | 22.12 ns | ±0.09 ns | 50.00x slower |
-| 11 | `string_from_plus_op` | 22.18 ns | ±0.11 ns | 50.14x slower |
-| 12 | `mut_string_push_str` | 24.32 ns | ±0.06 ns | 54.97x slower |
-| 13 | `array_join` | 26.16 ns | ±0.12 ns | 59.13x slower |
-| 14 | `collect_from_array_to_string` | 26.22 ns | ±0.12 ns | 59.27x slower |
-| 15 | `string_from_all` | 26.77 ns | ±0.34 ns | 60.52x slower |
-| 16 | `array_join_long` | 26.82 ns | ±0.15 ns | 60.62x slower |
-| 17 | `array_concat` | 26.82 ns | ±0.20 ns | 60.63x slower |
-| 18 | `mut_string_with_too_little_capacity_push_str` | 28.63 ns | ±0.34 ns | 64.73x slower |
-| 19 | `collect_from_vec_to_string` | 29.41 ns | ±1.37 ns | 66.49x slower |
-| 20 | `joinery` | 35.91 ns | ±1.18 ns | 81.17x slower |
-| 21 | `format_macro` | 45.50 ns | ±0.06 ns | 102.85x slower |
-| 22 | `format_macro_implicit_args` | 45.66 ns | ±0.16 ns | 103.22x slower |
-| 23 | `mut_string_push_string` | 57.24 ns | ±0.29 ns | 129.40x slower |
+| 1 | `from_bytes` | 0.34 ns | ±0.11 ns | 1.00x (baseline) |
+| 2 | `concat_string_macro` | 4.71 ns | ±0.01 ns | 14.03x slower |
+| 3 | `mut_string_with_capacity_push_str` | 4.77 ns | ±0.04 ns | 14.21x slower |
+| 4 | `string_concat_macro` | 4.79 ns | ±0.02 ns | 14.28x slower |
+| 5 | `concat_strs_macro` | 4.94 ns | ±0.01 ns | 14.72x slower |
+| 6 | `mut_string_with_capacity_push_str_char` | 5.74 ns | ±0.34 ns | 17.09x slower |
+| 7 | `concat_in_place_macro` | 9.33 ns | ±0.02 ns | 27.80x slower |
+| 8 | `mut_string_with_too_much_capacity_push_str` | 10.69 ns | ±0.46 ns | 31.86x slower |
+| 9 | `array_join` | 19.49 ns | ±0.26 ns | 58.06x slower |
+| 10 | `array_concat` | 19.78 ns | ±0.47 ns | 58.94x slower |
+| 11 | `array_join_long` | 19.94 ns | ±0.44 ns | 59.41x slower |
+| 12 | `to_string_plus_op` | 23.58 ns | ±0.16 ns | 70.24x slower |
+| 13 | `to_owned_plus_op` | 23.68 ns | ±0.35 ns | 70.56x slower |
+| 14 | `string_from_plus_op` | 24.43 ns | ±0.16 ns | 72.80x slower |
+| 15 | `mut_string_push_str` | 25.77 ns | ±0.24 ns | 76.77x slower |
+| 16 | `string_from_all` | 27.08 ns | ±0.21 ns | 80.69x slower |
+| 17 | `collect_from_array_to_string` | 27.27 ns | ±0.10 ns | 81.24x slower |
+| 18 | `collect_from_vec_to_string` | 28.40 ns | ±0.44 ns | 84.61x slower |
+| 19 | `mut_string_with_too_little_capacity_push_str` | 31.58 ns | ±0.28 ns | 94.10x slower |
+| 20 | `joinery` | 37.10 ns | ±1.00 ns | 110.53x slower |
+| 21 | `format_macro` | 45.05 ns | ±0.95 ns | 134.22x slower |
+| 22 | `format_macro_implicit_args` | 45.69 ns | ±1.57 ns | 136.12x slower |
+| 23 | `mut_string_push_string` | 48.03 ns | ±0.25 ns | 143.10x slower |
 
 ## RGB Formatting (with number conversion)
 
 | Rank | Benchmark | Mean | Std Dev | vs Fastest |
 |------|-----------|------|---------|------------|
-| 1 | `rgb_itoa_reuse_buffer` | 4.86 ns | ±0.02 ns | 1.00x (baseline) |
-| 2 | `rgb_itoa_with_capacity` | 4.87 ns | ±0.05 ns | 1.00x slower |
-| 3 | `rgb_precomputed_concat_string` | 15.54 ns | ±0.15 ns | 3.19x slower |
-| 4 | `rgb_string_concat_macro` | 37.68 ns | ±0.34 ns | 7.75x slower |
-| 5 | `rgb_concat_in_place_macro` | 37.79 ns | ±0.20 ns | 7.77x slower |
-| 6 | `rgb_mut_string_with_capacity_push_str` | 38.35 ns | ±0.23 ns | 7.88x slower |
-| 7 | `rgb_concat_strs_macro` | 40.33 ns | ±0.40 ns | 8.29x slower |
-| 8 | `rgb_concat_string_macro` | 41.49 ns | ±0.19 ns | 8.53x slower |
-| 9 | `rgb_string_from_plus_op` | 47.75 ns | ±0.52 ns | 9.82x slower |
-| 10 | `rgb_mut_string_push_str` | 52.40 ns | ±0.27 ns | 10.77x slower |
-| 11 | `rgb_write_macro` | 53.06 ns | ±0.20 ns | 10.91x slower |
-| 12 | `rgb_precomputed_strings` | 54.92 ns | ±1.32 ns | 11.29x slower |
-| 13 | `rgb_array_join` | 60.65 ns | ±2.01 ns | 12.47x slower |
-| 14 | `rgb_format_macro_implicit_args` | 61.66 ns | ±0.26 ns | 12.68x slower |
-| 15 | `rgb_format_macro` | 62.08 ns | ±0.71 ns | 12.76x slower |
+| 1 | `rgb_itoa_reuse_buffer` | 5.34 ns | ±0.09 ns | 1.00x (baseline) |
+| 2 | `rgb_itoa_with_capacity` | 5.35 ns | ±0.09 ns | 1.00x slower |
+| 3 | `rgb_precomputed_concat_string` | 15.67 ns | ±0.24 ns | 2.94x slower |
+| 4 | `rgb_string_concat_macro` | 38.29 ns | ±0.21 ns | 7.17x slower |
+| 5 | `rgb_mut_string_with_capacity_push_str` | 38.69 ns | ±0.56 ns | 7.25x slower |
+| 6 | `rgb_concat_strs_macro` | 38.89 ns | ±0.48 ns | 7.29x slower |
+| 7 | `rgb_concat_in_place_macro` | 40.67 ns | ±0.40 ns | 7.62x slower |
+| 8 | `rgb_concat_string_macro` | 40.85 ns | ±0.34 ns | 7.66x slower |
+| 9 | `rgb_string_from_plus_op` | 48.18 ns | ±1.23 ns | 9.03x slower |
+| 10 | `rgb_mut_string_push_str` | 51.09 ns | ±1.07 ns | 9.57x slower |
+| 11 | `rgb_write_macro` | 54.84 ns | ±0.37 ns | 10.28x slower |
+| 12 | `rgb_precomputed_strings` | 56.19 ns | ±2.98 ns | 10.53x slower |
+| 13 | `rgb_array_join` | 62.45 ns | ±0.59 ns | 11.70x slower |
+| 14 | `rgb_format_macro_implicit_args` | 63.64 ns | ±0.30 ns | 11.92x slower |
+| 15 | `rgb_format_macro` | 64.99 ns | ±0.69 ns | 12.18x slower |
 
 ## Summary
 
-**Fastest string concat:** `from_bytes` (UNSAFE) (0.44 ns)
+**Fastest string concat:** `from_bytes` (0.34 ns)
 
-**Fastest RGB format:** `rgb_itoa_reuse_buffer` (4.86 ns)
+**Fastest RGB format:** `rgb_itoa_reuse_buffer` (5.34 ns)

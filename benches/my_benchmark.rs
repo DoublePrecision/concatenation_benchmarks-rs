@@ -1,9 +1,9 @@
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
-
 use concat_string::concat_string;
 use concat_strs::concat_strs;
+use criterion::{Criterion, criterion_group, criterion_main};
 use joinery::prelude::*;
 use mimalloc::MiMalloc;
+use std::hint::black_box;
 
 #[macro_use]
 extern crate string_concat;
