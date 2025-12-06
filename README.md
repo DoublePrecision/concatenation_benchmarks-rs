@@ -112,17 +112,12 @@ LLVM version: 21.1.5
 
 ## Summary
 
-**Fastest String concat:** `from_bytes` (0.34 ns)
+- **Fastest String concat:** `from_bytes` (0.34 ns)
+- **Fastest RGB format:** `rgb_itoa_with_capacity` (5.28 ns)
+- **Fastest CompactString concat:** `collect_from_vec_to_compact_string` (13.24 ns)
+- **Fastest CompactString RGB format:** `rgb_compact_string_itoa` (50.19 ns)
 
-**Fastest RGB format:** `rgb_itoa_with_capacity` (5.28 ns)
-
-**Fastest CompactString concat:** `collect_from_vec_to_compact_string` (13.24 ns)
-
-**Fastest CompactString RGB format:** `rgb_compact_string_itoa` (50.19 ns)
-
-# Macbook Air M1 (base model)
-
-## Linux
+## Macbook Air M1 (base model)
 
 ## Hardware
 
@@ -141,7 +136,6 @@ host: aarch64-apple-darwin
 release: 1.94.0-nightly
 LLVM version: 21.1.5
 ```
-
 
 ## String Concatenation (DateTime)
 
@@ -214,11 +208,7 @@ LLVM version: 21.1.5
 
 ## Summary
 
-**Fastest String concat:** `from_bytes` (0.32 ns)
-
-**Fastest RGB format:** `rgb_itoa_reuse_buffer` (6.43 ns)
-
-**Fastest CompactString concat:** `collect_from_array_to_compact_string` (10.51 ns)
-
-**Fastest CompactString RGB format:** `rgb_compact_string_itoa` (49.14 ns)
-
+- **Fastest String concat:** `from_bytes` (0.32 ns)
+- **Fastest RGB format:** `rgb_itoa_reuse_buffer` (6.43 ns)
+- **Fastest CompactString concat:** `collect_from_array_to_compact_string` (10.51 ns)
+- **Fastest CompactString RGB format:** `rgb_compact_string_itoa` (49.14 ns)
